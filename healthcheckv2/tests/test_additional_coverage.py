@@ -167,5 +167,5 @@ def test_healthchecker_resource_metrics_disabled_returns_flagged():
     report = hc.run()
     assert report.summary["resource_metrics_enabled"] is False
     assert report.summary["network_metrics_enabled"] is False
-    # details is str because include_details True and redaction disabled -> _redact not applied to str()
-    assert isinstance(report.details, str)
+    # With include_details True and redaction disabled, details remains a dict
+    assert isinstance(report.details, dict)
