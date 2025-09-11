@@ -27,8 +27,23 @@ class JsonFormatter(logging.Formatter):
             value = getattr(record, key, None)
             if value is not None:
                 base[key] = value
+
+        # Format exception info robustly:
+        # - If record.exc_info is True, fetch current exception via sys.exc_info()
+        # - If it's a tuple-like exc_info, pass as-is
+        # - Otherwise, ignore to avoid formatting errors
         if record.exc_info:
-            base["exc_info"] = self.formatException(record.exc_info)
+            exc_info = record.exc_info
+            try:
+                if exc_info is True:
+                    exc_info = sys.exc_info()
+                # Ensure exc_info is a 3-tuple before formatting
+                if isinstance(exc_info, tuple) and len(exc_info) == 3:
+                    base["exc_info"] = self.formatException(exc_info)
+            except Exception:
+                # Defensive: never let logging crash due to formatting issues
+                pass
+
         return json.dumps(base, ensure_ascii=False)
 
 
