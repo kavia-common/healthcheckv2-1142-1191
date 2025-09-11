@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import sys
 
 from healthcheck.healthcheck.logger import get_logger, JsonFormatter
 
@@ -17,6 +18,9 @@ def test_json_formatter_includes_exc_info_and_extras():
     try:
         raise ValueError("boom")
     except ValueError:
+        # Capture the actual exc_info tuple inside the except block so that
+        # formatting outside the block can still include a valid traceback.
+        captured = sys.exc_info()
         rec = logger.makeRecord(
             name="hc-test-json",
             level=logging.ERROR,
@@ -24,9 +28,15 @@ def test_json_formatter_includes_exc_info_and_extras():
             lno=1,
             msg="failed",
             args=(),
-            exc_info=True,
+            exc_info=True,  # maintain normal semantics
             func="f",
-            extra={"site_id": "S", "cluster_id": "C", "env": "dev"},
+            extra={
+                "site_id": "S",
+                "cluster_id": "C",
+                "env": "dev",
+                # Provide captured_exc_info for robust formatting later
+                "captured_exc_info": captured,
+            },
         )
     out = fmt.format(rec)
     data = json.loads(out)

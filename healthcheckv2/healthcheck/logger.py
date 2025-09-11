@@ -28,21 +28,23 @@ class JsonFormatter(logging.Formatter):
             if value is not None:
                 base[key] = value
 
-        # Format exception info robustly:
-        # - If record.exc_info is True, fetch current exception via sys.exc_info()
-        # - If it's a tuple-like exc_info, pass as-is
-        # - Otherwise, ignore to avoid formatting errors
-        if record.exc_info:
-            exc_info = record.exc_info
-            try:
-                if exc_info is True:
-                    exc_info = sys.exc_info()
-                # Ensure exc_info is a 3-tuple before formatting
-                if isinstance(exc_info, tuple) and len(exc_info) == 3:
-                    base["exc_info"] = self.formatException(exc_info)
-            except Exception:
-                # Defensive: never let logging crash due to formatting issues
-                pass
+        # Normalize and format exception info robustly.
+        # Python logging loses access to the active exception once outside the `except` block
+        # when a LogRecord was created with exc_info=True. To make post-except formatting work,
+        # support a custom attribute `captured_exc_info` which should be a 3-tuple captured
+        # inside the except block. If present, prefer it. Otherwise, fall back to record.exc_info.
+        try:
+            exc_info_obj = getattr(record, "captured_exc_info", None)
+            if not exc_info_obj and record.exc_info:
+                exc_info_obj = record.exc_info
+                if exc_info_obj is True:
+                    # Best effort — may be (None, None, None) outside the except block
+                    exc_info_obj = sys.exc_info()
+            if isinstance(exc_info_obj, tuple) and len(exc_info_obj) == 3 and exc_info_obj[0] is not None:
+                base["exc_info"] = self.formatException(exc_info_obj)
+        except Exception:
+            # Defensive: never let logging crash due to formatting issues
+            pass
 
         return json.dumps(base, ensure_ascii=False)
 
