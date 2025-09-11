@@ -1,0 +1,52 @@
+# Default configuration for healthcheckv2
+env: dev
+site_id: "SITE-CHANGE-ME"
+cluster_id: "CLUSTER-CHANGE-ME"
+
+logging:
+  level: INFO
+  json: true
+
+loki:
+  enabled: false
+  url: "http://loki:3100"
+  tenant_id: null
+  level: INFO
+  labels:
+    app: healthcheckv2
+    component: healthcheck
+
+kafka:
+  enabled: false
+  bootstrap_servers: "kafka:9092"
+  topic: "health_reports"
+  client_id: "healthcheckv2"
+  security_protocol: "PLAINTEXT"
+  sasl_mechanism: null
+  sasl_username: null
+  sasl_password: null
+
+kubernetes:
+  context: null
+  namespace: null
+  kubectl_path: "kubectl"
+  extra_args: ""
+
+metrics:
+  collect_resource_metrics: true
+  collect_network_metrics: true
+  sctp: true
+  rach: true
+  pucch: true
+  csr: true
+
+report:
+  include_details: true
+  redact_sensitive: true
+  version: "1.0.0"
+
+simulation:
+  enabled: true
+  node_count: 3
+  pod_count: 6
+  failure_rate: 0.0
