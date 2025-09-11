@@ -79,7 +79,7 @@ class SimulationLayer:
         # Fake network metrics collection commands and disk usage
         cmd = " ".join(command)
         if "sctp" in cmd:
-            return 0, "sctp_assoc=10 sctp_errors=0", ""
+            return 0, "ok sctp_assoc=10 sctp_errors=0", ""
         if "rach" in cmd:
             return 0, "rach_success=95 rach_total=100", ""
         if "pucch" in cmd:

@@ -57,7 +57,7 @@ def get_logger(
     # Clear existing handlers for idempotency
     logger.handlers.clear()
 
-    stream = logging.StreamHandler(stream=sys.stdout)
+    stream = logging.StreamHandler(stream=sys.stderr)
     if json_output:
         stream.setFormatter(JsonFormatter())
     else:
